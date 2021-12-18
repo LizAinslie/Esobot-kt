@@ -99,18 +99,20 @@ open class Bot<Config : BaseConfig>(val config: Config): ListenerAdapter() {
             if (discordLoggedIn) {
                 if (config.debug) {
                     if (config.discordTestingServer != null) {
+                        println("Info: Registering command ${command.name} in testing guild.")
                         jda
                             ?.getGuildById(config.discordTestingServer!!)
                             ?.upsertCommand(command.name, command.description)
                             ?.queue()
-                    }
+                    } else println("Warn: Discord testing server not supplied in debug mode, skipping command: ${command.name}")
                 } else {
+                    println("Info: Registering command ${command.name} globally.")
                     jda
                         ?.upsertCommand(command.name, command.description)
                         ?.queue()
                 }
             } else println("Warn: Discord should be logged in before registering any commands. Call bot.login() first.")
-        } else println("Info: Discord not enabled, skipping slash command registration for command: ${command.name}")
+        } else println("Info: Discord not enabled, skipping command: ${command.name}")
 
         // todo: impl. revolt
     }
