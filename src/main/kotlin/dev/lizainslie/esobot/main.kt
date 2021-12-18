@@ -1,5 +1,6 @@
 package dev.lizainslie.esobot
 
+import dev.lizainslie.esobot.commands.PingCommand
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -33,4 +34,6 @@ fun main(args: Array<String>) {
 
     val bot = EsoBot(config)
     bot.login()
+
+    bot.registerCommand(PingCommand())
 }
