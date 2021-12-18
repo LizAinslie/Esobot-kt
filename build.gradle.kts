@@ -14,6 +14,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
 
+    implementation("ch.qos.logback:logback-classic:1.2.8")
     implementation("net.dv8tion:JDA:5.0.0-alpha.2") {
         exclude(module = "opus-java")
     }
