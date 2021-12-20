@@ -1,5 +1,6 @@
 package dev.lizainslie.esobot
 
+import dev.lizainslie.esobot.commands.HelpCommand
 import dev.lizainslie.esobot.commands.PingCommand
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -36,4 +37,5 @@ fun main(args: Array<String>) {
     bot.login()
 
     bot.registerCommand(PingCommand())
+    bot.registerCommand(HelpCommand())
 }
