@@ -7,4 +7,6 @@ abstract class BaseCommand(
 ) {
     abstract fun runDiscord(ctx: DiscordCommandContext)
     abstract fun runRevolt() // todo: impl. revolt
+
+    fun buildHelpText() = "$description | Usage: `/$name${if(usage.isNotEmpty()) " $usage" else ""}`"
 }

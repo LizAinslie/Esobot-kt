@@ -11,7 +11,11 @@ class HelpCommand : BaseCommand("commands", "List Commands", "") {
         eb.setTitle("Command List")
 
         for (command in EsoBot.instance.commands)
-            eb.addField(command.name, "${command.description} | Usage: /${command.name} `${command.usage}`", false)
+            eb.addField(
+                command.name,
+                command.buildHelpText(),
+                false
+            )
 
         ctx.event.replyEmbeds(eb.build()).queue()
     }
