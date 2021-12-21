@@ -6,10 +6,15 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import javax.security.auth.login.LoginException
 
 open class Bot<Config : BaseConfig>(val config: Config): ListenerAdapter() {
+    companion object {
+        val logger: Logger = LoggerFactory.getLogger(Bot::class.java)
+    }
+
     class DiscordCommandListener(private val commands: MutableList<BaseCommand>) : ListenerAdapter() {
         override fun onSlashCommand(event: SlashCommandEvent) {
             val commandLabel = event.name
@@ -19,7 +24,7 @@ open class Bot<Config : BaseConfig>(val config: Config): ListenerAdapter() {
             if (command != null) {
                 command.runDiscord(DiscordCommandContext(event))
             } else {
-                println("Command $commandLabel not registered, sending warning to channel and ignoring server-side.")
+                logger.warn("Command $commandLabel not registered, sending warning to channel and ignoring server-side.")
                 event
                     .reply("Command $commandLabel not registered, bot has logged this incident. Please inform the bot maintainer of this issue.")
                     .setEphemeral(true)
@@ -49,9 +54,9 @@ open class Bot<Config : BaseConfig>(val config: Config): ListenerAdapter() {
     inline fun <reified T : ListenerAdapter> addDiscordEventListener(listener: T) {
         if (discordEnabled) {
             if (discordLoggedIn)
-                println("Warn: Already logged into Discord, not registering new event listener: ${T::class.simpleName}.")
+                logger.warn("Already logged into Discord, not registering new event listener: ${T::class.simpleName}.")
             else jdaBuilder?.addEventListeners(listener)
-        } else println("Info: Discord token not supplied, not registering new event listener: ${T::class.simpleName}.")
+        } else logger.debug("Discord token not supplied, not registering new event listener: ${T::class.simpleName}.")
     }
 
     /**
@@ -65,14 +70,14 @@ open class Bot<Config : BaseConfig>(val config: Config): ListenerAdapter() {
         if (discordEnabled) {
             try {
                 jda = jdaBuilder?.build()
-                println("Info: Successfully logged into Discord: ${jda!!.selfUser.id}")
+                logger.debug("Successfully logged into Discord: ${jda!!.selfUser.id}")
                 discordLoggedIn = true
             } catch (e: LoginException) {
-                println("Fatal: Failed to log into Discord, disabling discord functionality and logging stack trace below.")
+                logger.error("Failed to log into Discord, disabling discord functionality and logging stack trace below.")
                 discordEnabled = false
-                e.printStackTrace()
+                logger.trace(e.stackTrace.toString())
             }
-        } else println("Info: Discord token not supplied, not logging into Discord.")
+        } else logger.debug("Discord token not supplied, not logging into Discord.")
 
         // todo: impl. revolt
     }
@@ -99,20 +104,14 @@ open class Bot<Config : BaseConfig>(val config: Config): ListenerAdapter() {
             if (discordLoggedIn) {
                 if (config.debug) {
                     if (config.discordTestingServer != null) {
-                        println("Info: Registering command ${command.name} in testing guild.")
                         jda
                             ?.getGuildById(config.discordTestingServer!!)
                             ?.upsertCommand(command.name, command.description)
                             ?.queue()
-                    } else println("Warn: Discord testing server not supplied in debug mode, skipping command: ${command.name}")
-                } else {
-                    println("Info: Registering command ${command.name} globally.")
-                    jda
-                        ?.upsertCommand(command.name, command.description)
-                        ?.queue()
-                }
-            } else println("Warn: Discord should be logged in before registering any commands. Call bot.login() first.")
-        } else println("Info: Discord not enabled, skipping command: ${command.name}")
+                    } else logger.warn("Discord testing server not supplied in debug mode, skipping command: ${command.name}")
+                } else jda?.upsertCommand(command.name, command.description)?.queue()
+            } // else println("Warn: Discord should be logged in before registering any commands. Call bot.login() first.")
+        } else logger.debug("Discord not enabled, skipping command: ${command.name}")
 
         // todo: impl. revolt
     }
